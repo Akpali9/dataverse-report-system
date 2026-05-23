@@ -2,7 +2,14 @@ import { redirect } from 'next/navigation'
 import { getCurrentUserProfile } from '@/lib/api-utils'
 
 export default async function Page() {
-  const profile = await getCurrentUserProfile()
+  let profile = null
+  try {
+    profile = await getCurrentUserProfile()
+  } catch (error) {
+    console.log("[v0] Error fetching user profile:", error)
+    // If there's an error, just let the user see the landing page
+    profile = null
+  }
 
   if (profile) {
     redirect('/dashboard')
