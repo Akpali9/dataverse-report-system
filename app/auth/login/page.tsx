@@ -1,7 +1,7 @@
-// app/auth/login/page.js (updated)
+// app/auth/login/page.tsx
 'use client'
 
-import { loginWithEmailAction } from '@/app/actions/auth'
+import { loginAction } from '@/app/actions/auth'  // Change this line
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -26,7 +26,7 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const result = await loginWithEmailAction(email, password)
+      const result = await loginAction(email, password)  // Use loginAction
       if (result?.error) {
         setError(result.error)
       } else {
