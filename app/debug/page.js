@@ -1,44 +1,65 @@
-// app/debug/page.js
+// app/test/page.js
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createBrowserClient } from '@supabase/ssr'; // ✅ Correct import
+import { createBrowserClient } from '@supabase/ssr';
 
-export default function DebugPage() {
+export default function TestPage() {
+  const [status, setStatus] = useState('Loading...');
   const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
 
   useEffect(() => {
-    async function testConnection() {
+    async function test() {
       try {
+        // Check if env vars exist
+        if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+          throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL');
+        }
+        if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+          throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY');
+        }
+
+        setStatus('Creating Supabase client...');
+        
         const supabase = createBrowserClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
         );
+
+        setStatus('Testing connection...');
         
-        // Test 1: Check auth
-        const { data: { session }, error: authError } = await supabase.auth.getSession();
-        console.log('Auth:', session ? 'Logged in' : 'Not logged in');
-        
-        // Test 2: Test RLS policies
-        const { data: users, error: usersError } = await supabase
+        // Simple test query
+        const { error: testError } = await supabase
           .from('users')
-          .select('*')
-          .limit(1);
+          .select('count', { count: 'exact', head: true });
         
-        if (usersError) throw usersError;
+        if (testError) throw testError;
         
-        setData({ success: true, users: users?.length });
+        setStatus('✅ Connected successfully!');
       } catch (err) {
-        console.error('Debug error:', err);
+        console.error('Test error:', err);
         setError(err.message);
+        setStatus('❌ Connection failed');
       }
     }
     
-    testConnection();
+    test();
   }, []);
 
-  if (error) return <div className="text-red-500">Error: {error}</div>;
-  if (!data) return <div>Testing connection...</div>;
-  return <div className="text-green-500">Connection successful!</div>;
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">Database Connection Test</h1>
+      <div className={`p-4 rounded ${error ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+        <p className="font-semibold">Status: {status}</p>
+        {error && <p className="mt-2 text-sm">Error: {error}</p>}
+      </div>
+      <div className="mt-4 text-sm text-gray-600">
+        <p>Environment Variables Check:</p>
+        <ul className="list-disc ml-6 mt-2">
+          <li>NEXT_PUBLIC_SUPABASE_URL: {process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Missing'}</li>
+          <li>NEXT_PUBLIC_SUPABASE_ANON_KEY: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Set' : '❌ Missing'}</li>
+        </ul>
+      </div>
+    </div>
+  );
 }
