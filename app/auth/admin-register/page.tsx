@@ -1,6 +1,6 @@
 'use client'
 
-import { loginAction } from '@/app/actions/auth'
+import { adminSignUpAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -16,23 +16,38 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export default function Page() {
+  const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
+  const [fullName, setFullName] = useState('')
   const [password, setPassword] = useState('')
+  const [repeatPassword, setRepeatPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
 
+    if (password !== repeatPassword) {
+      setError('Passwords do not match')
+      setIsLoading(false)
+      return
+    }
+
+    if (!username || !fullName || !email) {
+      setError('All fields are required')
+      setIsLoading(false)
+      return
+    }
+
     try {
-      const result = await loginAction(username, password)
+      const result = await adminSignUpAction(email, password, username, fullName)
       if (result.error) {
         setError(result.error)
       } else {
-        router.push('/dashboard')
+        router.push('/auth/sign-up-success')
       }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred')
@@ -47,35 +62,49 @@ export default function Page() {
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">Login</CardTitle>
+              <CardTitle className="text-2xl">Instructor Registration</CardTitle>
               <CardDescription>
-                Enter your username and password to login
+                Create your instructor account to manage courses and students
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleSignUp}>
                 <div className="flex flex-col gap-6">
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="instructor@example.com"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
                   <div className="grid gap-2">
                     <Label htmlFor="username">Username</Label>
                     <Input
                       id="username"
                       type="text"
-                      placeholder="johndoe"
+                      placeholder="instructor_name"
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="password">Password</Label>
-                      <Link
-                        href="/auth/forgot-password"
-                        className="text-sm underline underline-offset-4"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="John Doe"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="password">Password</Label>
                     <Input
                       id="password"
                       type="password"
@@ -84,18 +113,28 @@ export default function Page() {
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="repeat-password">Repeat Password</Label>
+                    <Input
+                      id="repeat-password"
+                      type="password"
+                      required
+                      value={repeatPassword}
+                      onChange={(e) => setRepeatPassword(e.target.value)}
+                    />
+                  </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Logging in...' : 'Login'}
+                    {isLoading ? 'Creating account...' : 'Register'}
                   </Button>
                 </div>
                 <div className="mt-4 text-center text-sm">
-                  Are you an instructor?{' '}
+                  Already have an account?{' '}
                   <Link
-                    href="/auth/admin-register"
+                    href="/auth/login"
                     className="underline underline-offset-4"
                   >
-                    Register here
+                    Login
                   </Link>
                 </div>
               </form>

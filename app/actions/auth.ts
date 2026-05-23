@@ -3,16 +3,36 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-export async function loginAction(email: string, password: string) {
+export async function loginAction(username: string, password: string) {
   const supabase = await createClient()
 
+  // Get user by username from the users table
+  const { data: users, error: fetchError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('username', username)
+    .single()
+
+  if (fetchError || !users) {
+    return { error: 'Invalid username or password' }
+  }
+
+  // Get the user's email from auth.users
+  const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers()
+
+  const authUser = authUsers?.find(u => u.id === users.id)
+  if (!authUser?.email) {
+    return { error: 'Invalid username or password' }
+  }
+
+  // Sign in with the email
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: authUser.email,
     password,
   })
 
   if (error) {
-    return { error: error.message }
+    return { error: 'Invalid username or password' }
   }
 
   return { data }
@@ -24,15 +44,24 @@ export async function logoutAction() {
   redirect('/auth/login')
 }
 
-export async function signUpAction(
+export async function adminSignUpAction(
   email: string,
   password: string,
   username: string,
-  fullName: string,
-  schoolName: string,
-  isAdmin: boolean
+  fullName: string
 ) {
   const supabase = await createClient()
+
+  // Check if username already exists
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('username', username)
+    .single()
+
+  if (existingUser) {
+    return { error: 'Username already exists' }
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -42,8 +71,7 @@ export async function signUpAction(
       data: {
         username,
         full_name: fullName,
-        school_name: schoolName,
-        is_admin: isAdmin,
+        is_admin: true,
       },
     },
   })

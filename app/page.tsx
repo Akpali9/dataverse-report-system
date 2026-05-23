@@ -23,19 +23,20 @@ export default async function Page() {
         <div className="flex flex-col gap-3 w-full">
           <a href="/auth/login" className="inline-block">
             <button className="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
-              Login
+              Student / Admin Login
             </button>
           </a>
-          <a href="/auth/sign-up" className="inline-block">
+          <a href="/auth/admin-register" className="inline-block">
             <button className="w-full px-4 py-2 border border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition">
-              Sign Up
+              Instructor Registration
             </button>
           </a>
         </div>
 
-        <p className="text-xs text-gray-500">
-          Students and instructors can create their accounts here.
-        </p>
+        <div className="space-y-2 text-sm text-gray-600 border-t pt-6">
+          <p><strong>For Students:</strong> Use the login credentials provided by your instructor.</p>
+          <p><strong>For Instructors:</strong> Register here to create your account and manage students.</p>
+        </div>
       </div>
     </main>
   )
