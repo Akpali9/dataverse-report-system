@@ -1,6 +1,6 @@
 'use client'
 
-import { studentSignUpAction } from '@/app/actions/auth'
+import { adminSignUpAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -16,9 +16,9 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export default function Page() {
+  const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [fullName, setFullName] = useState('')
-  const [schoolName, setSchoolName] = useState('')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -36,15 +36,14 @@ export default function Page() {
       return
     }
 
-    if (!username || !fullName) {
-      setError('Username and full name are required')
+    if (!username || !fullName || !email) {
+      setError('All fields are required')
       setIsLoading(false)
       return
     }
 
     try {
-      const result = await studentSignUpAction(password, username, fullName, schoolName)
-      
+      const result = await adminSignUpAction(email, password, username, fullName)
       if (result.error) {
         setError(result.error)
       } else {
@@ -60,48 +59,67 @@ export default function Page() {
   return (
     <div className="flex min-h-screen w-full bg-background">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-secondary to-green-600 flex-col justify-between p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary to-blue-700 flex-col justify-between p-12">
         <div>
           <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-            🎓
+            👨‍🏫
           </div>
         </div>
         <div className="space-y-6">
           <h1 className="text-4xl font-bold text-white max-w-lg">
-            Join thousands of students learning today
+            Empower your teaching
           </h1>
-          <p className="text-lg text-green-100">
-            Submit assignments, take exams, and track your academic progress.
+          <p className="text-lg text-blue-100">
+            Manage assignments, track student progress, and create engaging learning experiences.
           </p>
           <div className="space-y-3 pt-4">
-            <div className="flex items-center gap-3 text-green-50">
-              <span>✓</span> Access course materials anytime
+            <div className="flex items-center gap-3 text-blue-50">
+              <span>✓</span> Organize and manage courses effortlessly
             </div>
-            <div className="flex items-center gap-3 text-green-50">
-              <span>✓</span> Submit assignments and get instant feedback
+            <div className="flex items-center gap-3 text-blue-50">
+              <span>✓</span> Create assignments and grading rubrics
             </div>
-            <div className="flex items-center gap-3 text-green-50">
-              <span>✓</span> Chat directly with instructors
+            <div className="flex items-center gap-3 text-blue-50">
+              <span>✓</span> Monitor student progress in real-time
+            </div>
+            <div className="flex items-center gap-3 text-blue-50">
+              <span>✓</span> Communicate with students instantly
             </div>
           </div>
         </div>
-        <p className="text-sm text-green-100">© 2024 Learning Platform. All rights reserved.</p>
+        <p className="text-sm text-blue-100">© 2024 Learning Platform. All rights reserved.</p>
       </div>
 
-      {/* Right side - Signup Form */}
+      {/* Right side - Registration Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-sm">
           <div className="space-y-8">
             {/* Header */}
             <div className="space-y-2 text-center lg:text-left">
-              <h2 className="text-3xl font-bold text-foreground">Create Your Account</h2>
-              <p className="text-muted-foreground">Register to start your learning journey</p>
+              <h2 className="text-3xl font-bold text-foreground">Instructor Registration</h2>
+              <p className="text-muted-foreground">Create your account to start teaching</p>
             </div>
 
             {/* Form Card */}
             <Card className="border-border">
               <CardContent className="pt-6">
                 <form onSubmit={handleSignUp} className="space-y-5">
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-semibold text-foreground">
+                      Email <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@school.com"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
+                    />
+                  </div>
+
                   {/* Username */}
                   <div className="space-y-2">
                     <Label htmlFor="username" className="text-sm font-semibold text-foreground">
@@ -114,7 +132,7 @@ export default function Page() {
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
 
@@ -130,22 +148,7 @@ export default function Page() {
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
-                    />
-                  </div>
-
-                  {/* School Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="schoolName" className="text-sm font-semibold text-foreground">
-                      School Name
-                    </Label>
-                    <Input
-                      id="schoolName"
-                      type="text"
-                      placeholder="Your school (optional)"
-                      value={schoolName}
-                      onChange={(e) => setSchoolName(e.target.value)}
-                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
 
@@ -161,7 +164,7 @@ export default function Page() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
 
@@ -177,7 +180,7 @@ export default function Page() {
                       required
                       value={repeatPassword}
                       onChange={(e) => setRepeatPassword(e.target.value)}
-                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
 
@@ -192,7 +195,7 @@ export default function Page() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-10 bg-secondary hover:bg-secondary text-secondary-foreground font-semibold rounded-lg transition-all mt-2"
+                    className="w-full h-10 bg-primary hover:bg-primary text-primary-foreground font-semibold rounded-lg transition-all mt-2"
                   >
                     {isLoading ? (
                       <span className="flex items-center gap-2">
@@ -211,7 +214,7 @@ export default function Page() {
             <div className="text-center space-y-4">
               <p className="text-sm text-muted-foreground">
                 Already have an account?{' '}
-                <Link href="/auth/login" className="text-secondary hover:underline font-semibold">
+                <Link href="/auth/login" className="text-primary hover:underline font-semibold">
                   Sign in here
                 </Link>
               </p>
