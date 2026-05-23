@@ -1,24 +1,48 @@
+// app/dashboard/admin/page.tsx
 import { redirect } from 'next/navigation'
-import { getCurrentUserProfile, getAllStudents, getAnnouncements } from '@/lib/api-utils'
-import AdminDashboardClient from '@/components/admin/dashboard-client'
+import { createClient } from '@/lib/supabase/server'
+import AdminDashboardClient from './AdminDashboardClient'
 
-export default async function AdminDashboard() {
-  const profile = await getCurrentUserProfile()
-
-  if (!profile || !profile.is_admin) {
+export default async function AdminDashboardPage() {
+  const supabase = await createClient()
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
     redirect('/auth/login')
   }
-
-  const students = await getAllStudents()
-  const announcements = await getAnnouncements(10)
-
+  
+  // Check if user is admin
+  const { data: profile } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+  
+  if (!profile?.is_admin) {
+    redirect('/dashboard')
+  }
+  
+  // Fetch all students (non-admin users)
+  const { data: students } = await supabase
+    .from('users')
+    .select('*')
+    .eq('is_admin', false)
+    .order('created_at', { ascending: false })
+  
+  // Fetch announcements
+  const { data: announcements } = await supabase
+    .from('announcements')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(5)
+  
   return (
-    <div className="min-h-screen bg-background">
-      <AdminDashboardClient
-        profile={profile}
-        students={students}
-        announcements={announcements}
-      />
-    </div>
+    <AdminDashboardClient 
+      profile={profile}
+      students={students || []}
+      announcements={announcements || []}
+    />
   )
 }
