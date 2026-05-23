@@ -1,13 +1,11 @@
+// app/auth/login/page.js (updated)
 'use client'
 
-import { loginAction } from '@/app/actions/auth'
+import { loginWithEmailAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,8 +13,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-export default function Page() {
-  const [username, setUsername] = useState('')
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -28,8 +26,8 @@ export default function Page() {
     setError(null)
 
     try {
-      const result = await loginAction(username, password)
-      if (result.error) {
+      const result = await loginWithEmailAction(email, password)
+      if (result?.error) {
         setError(result.error)
       } else {
         router.push('/dashboard')
@@ -75,18 +73,18 @@ export default function Page() {
             <Card className="border-border">
               <CardContent className="pt-6">
                 <form onSubmit={handleLogin} className="space-y-6">
-                  {/* Username Input */}
+                  {/* Email Input */}
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="text-sm font-semibold text-foreground">
-                      Username
+                    <Label htmlFor="email" className="text-sm font-semibold text-foreground">
+                      Email
                     </Label>
                     <Input
-                      id="username"
-                      type="text"
-                      placeholder="Enter your username"
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
                       required
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
