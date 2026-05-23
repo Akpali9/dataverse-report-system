@@ -1,3 +1,4 @@
+// app/page.js
 import { redirect } from 'next/navigation'
 import { getCurrentUserProfile } from '@/lib/api-utils'
 
@@ -92,8 +93,6 @@ export default async function Page() {
               </div>
             </div>
           </a>
-
-
 
           {/* Footer Info */}
           <div className="pt-6 border-t border-border">
