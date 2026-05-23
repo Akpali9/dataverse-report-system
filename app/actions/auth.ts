@@ -44,6 +44,49 @@ export async function logoutAction() {
   redirect('/auth/login')
 }
 
+export async function studentSignUpAction(
+  password: string,
+  username: string,
+  fullName: string,
+  schoolName: string
+) {
+  const supabase = await createClient()
+
+  // Check if username already exists
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('username', username)
+    .single()
+
+  if (existingUser) {
+    return { error: 'Username already exists' }
+  }
+
+  // Generate a unique email based on username and timestamp
+  const tempEmail = `${username}-${Date.now()}@student.local`
+
+  const { data, error } = await supabase.auth.signUp({
+    email: tempEmail,
+    password,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/auth/callback`,
+      data: {
+        username,
+        full_name: fullName,
+        school_name: schoolName,
+        is_admin: false,
+      },
+    },
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { data }
+}
+
 export async function adminSignUpAction(
   email: string,
   password: string,
