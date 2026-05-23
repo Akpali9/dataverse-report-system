@@ -86,18 +86,7 @@ export default async function Page() {
             </div>
           </a>
 
-          {/* Instructor Registration Card */}
-          <a href="/auth/admin-register" className="block group">
-            <div className="border-2 border-secondary rounded-xl p-6 hover:border-primary hover:shadow-lg transition-all bg-secondary/5">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg text-foreground">Instructor Registration</h3>
-                  <p className="text-sm text-muted-foreground">Create your instructor account</p>
-                </div>
-                <span className="text-2xl group-hover:translate-x-1 transition-transform">→</span>
-              </div>
-            </div>
-          </a>
+
 
           {/* Footer Info */}
           <div className="pt-6 border-t border-border">

@@ -152,18 +152,11 @@ export default function Page() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <Link href="/auth/sign-up" className="block">
-                  <Button variant="outline" className="w-full h-10 border-border hover:border-primary hover:bg-background text-foreground">
-                    Create Student Account
-                  </Button>
-                </Link>
-                <Link href="/auth/admin-register" className="block">
-                  <Button variant="outline" className="w-full h-10 border-secondary hover:border-primary hover:bg-secondary/5 text-foreground">
-                    Register as Instructor
-                  </Button>
-                </Link>
-              </div>
+              <Link href="/auth/sign-up" className="block">
+                <Button variant="outline" className="w-full h-10 border-border hover:border-primary hover:bg-background text-foreground">
+                  Create Student Account
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
