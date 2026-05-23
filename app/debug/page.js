@@ -1,7 +1,8 @@
+// app/debug/page.js
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/ssr'; // Change this line
 
 export default function DebugPage() {
   const [error, setError] = useState(null);
