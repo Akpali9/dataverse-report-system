@@ -1,8 +1,71 @@
+// app/actions/auth.ts
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
+// Admin sign up action
+export async function adminSignUpAction(email: string, password: string, fullName: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          username: email.split('@')[0],
+          is_admin: true,
+        },
+      },
+    })
+    
+    if (error) {
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Admin signup error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+// Student sign up action
+export async function studentSignUpAction(email: string, password: string, fullName: string, username: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          username: username,
+          is_admin: false,
+        },
+      },
+    })
+    
+    if (error) {
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Student signup error:', error)
+    return { error: 'An unexpected error occurred' }
+  }
+}
+
+// General sign up action (for backwards compatibility)
+export async function signUpAction(email: string, password: string, fullName: string, username: string) {
+  return studentSignUpAction(email, password, fullName, username)
+}
+
+// Login action
 export async function loginAction(email: string, password: string) {
   try {
     const supabase = await createClient()
@@ -35,6 +98,7 @@ export async function loginAction(email: string, password: string) {
   }
 }
 
+// Logout action
 export async function logoutAction() {
   try {
     const supabase = await createClient()
@@ -43,31 +107,5 @@ export async function logoutAction() {
   } catch (error) {
     console.error('Logout error:', error)
     redirect('/')
-  }
-}
-
-export async function signUpAction(email: string, password: string, fullName: string, username: string) {
-  try {
-    const supabase = await createClient()
-    
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          username: username,
-        },
-      },
-    })
-    
-    if (error) {
-      return { error: error.message }
-    }
-    
-    return { success: true }
-  } catch (error) {
-    console.error('Signup error:', error)
-    return { error: 'An unexpected error occurred' }
   }
 }
