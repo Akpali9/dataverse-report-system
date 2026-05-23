@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/ssr'; // Change this line
+import { createBrowserClient } from '@supabase/ssr'; // ✅ Correct import
 
 export default function DebugPage() {
   const [error, setError] = useState(null);
@@ -11,7 +11,7 @@ export default function DebugPage() {
   useEffect(() => {
     async function testConnection() {
       try {
-        const supabase = createClient(
+        const supabase = createBrowserClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
         );
