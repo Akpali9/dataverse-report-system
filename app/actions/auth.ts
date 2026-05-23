@@ -1,159 +1,74 @@
+// app/actions/auth.ts
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-export async function loginAction(username: string, password: string) {
-  const supabase = await createClient()
-
-  // Get user by username from the users table
-  const { data: users, error: fetchError } = await supabase
-    .from('users')
-    .select('id')
-    .eq('username', username)
-    .single()
-
-  if (fetchError || !users) {
-    return { error: 'Invalid username or password' }
+export async function loginAction(email: string, password: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    
+    if (error) {
+      return { error: error.message }
+    }
+    
+    // Check if user is admin
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', data.user.id)
+      .single()
+    
+    // Redirect based on role
+    if (profile?.is_admin) {
+      redirect('/admin/dashboard')
+    } else {
+      redirect('/dashboard')
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    return { error: 'Invalid email or password' }
   }
-
-  // Get the user's email from auth.users
-  const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers()
-
-  const authUser = authUsers?.find(u => u.id === users.id)
-  if (!authUser?.email) {
-    return { error: 'Invalid username or password' }
-  }
-
-  // Sign in with the email
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: authUser.email,
-    password,
-  })
-
-  if (error) {
-    return { error: 'Invalid username or password' }
-  }
-
-  return { data }
 }
 
-export async function logoutAction() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  redirect('/auth/login')
-}
-
-export async function studentSignUpAction(
-  password: string,
-  username: string,
-  fullName: string,
-  schoolName: string
-) {
-  const supabase = await createClient()
-
-  // Check if username already exists
-  const { data: existingUser } = await supabase
-    .from('users')
-    .select('id')
-    .eq('username', username)
-    .single()
-
-  if (existingUser) {
-    return { error: 'Username already exists' }
-  }
-
-  // Generate a unique email based on username and timestamp
-  const tempEmail = `${username}-${Date.now()}@student.local`
-
-  const { data, error } = await supabase.auth.signUp({
-    email: tempEmail,
-    password,
-    options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/auth/callback`,
-      data: {
-        username,
-        full_name: fullName,
-        school_name: schoolName,
-        is_admin: false,
+export async function signUpAction(email: string, password: string, fullName: string, username: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          username: username,
+        },
       },
-    },
-  })
-
-  if (error) {
-    return { error: error.message }
+    })
+    
+    if (error) {
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Signup error:', error)
+    return { error: 'An unexpected error occurred' }
   }
-
-  return { data }
 }
 
-export async function adminSignUpAction(
-  email: string,
-  password: string,
-  username: string,
-  fullName: string
-) {
-  const supabase = await createClient()
-
-  // Check if username already exists
-  const { data: existingUser } = await supabase
-    .from('users')
-    .select('id')
-    .eq('username', username)
-    .single()
-
-  if (existingUser) {
-    return { error: 'Username already exists' }
+export async function signOutAction() {
+  try {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/')
+  } catch (error) {
+    console.error('Sign out error:', error)
+    return { error: 'An error occurred during sign out' }
   }
-
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/auth/callback`,
-      data: {
-        username,
-        full_name: fullName,
-        is_admin: true,
-      },
-    },
-  })
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  return { data }
-}
-
-export async function resetPasswordAction(email: string) {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/auth/reset-password`,
-  })
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  return { data }
-}
-
-export async function updatePasswordAction(
-  newPassword: string,
-  accessToken: string
-) {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase.auth.updateUser(
-    { password: newPassword },
-    { tokens: { access_token: accessToken, refresh_token: '' } }
-  )
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  return { data }
 }
