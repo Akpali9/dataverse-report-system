@@ -58,91 +58,169 @@ export default function Page() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Student Registration</CardTitle>
-            <CardDescription>
-              Create your student account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSignUp}>
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="username">Username *</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="johndoe"
-                    required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="fullName">Full Name *</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="John Doe"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="schoolName">School Name</Label>
-                  <Input
-                    id="schoolName"
-                    type="text"
-                    placeholder="Your School"
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password *</Label>
+    <div className="flex min-h-screen w-full bg-background">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-secondary to-green-600 flex-col justify-between p-12">
+        <div>
+          <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+            🎓
+          </div>
+        </div>
+        <div className="space-y-6">
+          <h1 className="text-4xl font-bold text-white max-w-lg">
+            Join thousands of students learning today
+          </h1>
+          <p className="text-lg text-green-100">
+            Submit assignments, take exams, and track your academic progress.
+          </p>
+          <div className="space-y-3 pt-4">
+            <div className="flex items-center gap-3 text-green-50">
+              <span>✓</span> Access course materials anytime
+            </div>
+            <div className="flex items-center gap-3 text-green-50">
+              <span>✓</span> Submit assignments and get instant feedback
+            </div>
+            <div className="flex items-center gap-3 text-green-50">
+              <span>✓</span> Chat directly with instructors
+            </div>
+          </div>
+        </div>
+        <p className="text-sm text-green-100">© 2024 Learning Platform. All rights reserved.</p>
+      </div>
+
+      {/* Right side - Signup Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-sm">
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="space-y-2 text-center lg:text-left">
+              <h2 className="text-3xl font-bold text-foreground">Create Your Account</h2>
+              <p className="text-muted-foreground">Register to start your learning journey</p>
+            </div>
+
+            {/* Form Card */}
+            <Card className="border-border">
+              <CardContent className="pt-6">
+                <form onSubmit={handleSignUp} className="space-y-5">
+                  {/* Username */}
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-semibold text-foreground">
+                      Username <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Choose a username"
+                      required
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                    />
                   </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="repeat-password">Repeat Password *</Label>
+
+                  {/* Full Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-sm font-semibold text-foreground">
+                      Full Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="Your full name"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                    />
                   </div>
-                  <Input
-                    id="repeat-password"
-                    type="password"
-                    required
-                    value={repeatPassword}
-                    onChange={(e) => setRepeatPassword(e.target.value)}
-                  />
-                </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Creating account...' : 'Sign up'}
-                </Button>
-              </div>
-              <div className="mt-4 text-center text-sm">
+
+                  {/* School Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="schoolName" className="text-sm font-semibold text-foreground">
+                      School Name
+                    </Label>
+                    <Input
+                      id="schoolName"
+                      type="text"
+                      placeholder="Your school (optional)"
+                      value={schoolName}
+                      onChange={(e) => setSchoolName(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-semibold text-foreground">
+                      Password <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Create a strong password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                    />
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div className="space-y-2">
+                    <Label htmlFor="repeat-password" className="text-sm font-semibold text-foreground">
+                      Confirm Password <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="repeat-password"
+                      type="password"
+                      placeholder="Confirm your password"
+                      required
+                      value={repeatPassword}
+                      onChange={(e) => setRepeatPassword(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-secondary"
+                    />
+                  </div>
+
+                  {/* Error Message */}
+                  {error && (
+                    <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3">
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-10 bg-secondary hover:bg-secondary text-secondary-foreground font-semibold rounded-lg transition-all mt-2"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Creating account...
+                      </span>
+                    ) : (
+                      'Create Account'
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Footer Links */}
+            <div className="text-center space-y-4">
+              <p className="text-sm text-muted-foreground">
                 Already have an account?{' '}
-                <Link
-                  href="/auth/login"
-                  className="underline underline-offset-4"
-                >
-                  Login
+                <Link href="/auth/login" className="text-secondary hover:underline font-semibold">
+                  Sign in here
                 </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                By registering, you agree to our Terms of Service and Privacy Policy
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

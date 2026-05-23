@@ -57,89 +57,172 @@ export default function Page() {
   }
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Instructor Registration</CardTitle>
-              <CardDescription>
-                Create your instructor account to manage courses and students
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSignUp}>
-                <div className="flex flex-col gap-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
+    <div className="flex min-h-screen w-full bg-background">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary to-blue-700 flex-col justify-between p-12">
+        <div>
+          <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+            👨‍🏫
+          </div>
+        </div>
+        <div className="space-y-6">
+          <h1 className="text-4xl font-bold text-white max-w-lg">
+            Empower your teaching
+          </h1>
+          <p className="text-lg text-blue-100">
+            Manage assignments, track student progress, and create engaging learning experiences.
+          </p>
+          <div className="space-y-3 pt-4">
+            <div className="flex items-center gap-3 text-blue-50">
+              <span>✓</span> Organize and manage courses effortlessly
+            </div>
+            <div className="flex items-center gap-3 text-blue-50">
+              <span>✓</span> Create assignments and grading rubrics
+            </div>
+            <div className="flex items-center gap-3 text-blue-50">
+              <span>✓</span> Monitor student progress in real-time
+            </div>
+            <div className="flex items-center gap-3 text-blue-50">
+              <span>✓</span> Communicate with students instantly
+            </div>
+          </div>
+        </div>
+        <p className="text-sm text-blue-100">© 2024 Learning Platform. All rights reserved.</p>
+      </div>
+
+      {/* Right side - Registration Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-sm">
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="space-y-2 text-center lg:text-left">
+              <h2 className="text-3xl font-bold text-foreground">Instructor Registration</h2>
+              <p className="text-muted-foreground">Create your account to start teaching</p>
+            </div>
+
+            {/* Form Card */}
+            <Card className="border-border">
+              <CardContent className="pt-6">
+                <form onSubmit={handleSignUp} className="space-y-5">
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-semibold text-foreground">
+                      Email <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="instructor@example.com"
+                      placeholder="your.email@school.com"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="username">Username</Label>
+
+                  {/* Username */}
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-semibold text-foreground">
+                      Username <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="username"
                       type="text"
-                      placeholder="instructor_name"
+                      placeholder="Choose a username"
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+
+                  {/* Full Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-sm font-semibold text-foreground">
+                      Full Name <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="fullName"
                       type="text"
-                      placeholder="John Doe"
+                      placeholder="Your full name"
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
+
+                  {/* Password */}
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-semibold text-foreground">
+                      Password <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="password"
                       type="password"
+                      placeholder="Create a strong password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="repeat-password">Repeat Password</Label>
+
+                  {/* Confirm Password */}
+                  <div className="space-y-2">
+                    <Label htmlFor="repeat-password" className="text-sm font-semibold text-foreground">
+                      Confirm Password <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="repeat-password"
                       type="password"
+                      placeholder="Confirm your password"
                       required
                       value={repeatPassword}
                       onChange={(e) => setRepeatPassword(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
-                  {error && <p className="text-sm text-red-500">{error}</p>}
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Creating account...' : 'Register'}
-                  </Button>
-                </div>
-                <div className="mt-4 text-center text-sm">
-                  Already have an account?{' '}
-                  <Link
-                    href="/auth/login"
-                    className="underline underline-offset-4"
+
+                  {/* Error Message */}
+                  {error && (
+                    <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3">
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-10 bg-primary hover:bg-primary text-primary-foreground font-semibold rounded-lg transition-all mt-2"
                   >
-                    Login
-                  </Link>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Creating account...
+                      </span>
+                    ) : (
+                      'Create Account'
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Footer Links */}
+            <div className="text-center space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{' '}
+                <Link href="/auth/login" className="text-primary hover:underline font-semibold">
+                  Sign in here
+                </Link>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                By registering, you agree to our Terms of Service and Privacy Policy
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

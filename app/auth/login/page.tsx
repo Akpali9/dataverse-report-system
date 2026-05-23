@@ -42,36 +42,64 @@ export default function Page() {
   }
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Login</CardTitle>
-              <CardDescription>
-                Enter your username and password to login
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin}>
-                <div className="flex flex-col gap-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="username">Username</Label>
+    <div className="flex min-h-screen w-full bg-background">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary to-blue-700 flex-col justify-between p-12">
+        <div>
+          <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+            📚
+          </div>
+        </div>
+        <div className="space-y-6">
+          <h1 className="text-4xl font-bold text-white max-w-lg">
+            Welcome back to your learning platform
+          </h1>
+          <p className="text-lg text-blue-100">
+            Access your courses, assignments, and track your progress.
+          </p>
+        </div>
+        <p className="text-sm text-blue-100">© 2024 Learning Platform. All rights reserved.</p>
+      </div>
+
+      {/* Right side - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-sm">
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="space-y-2 text-center lg:text-left">
+              <h2 className="text-3xl font-bold text-foreground">Sign In</h2>
+              <p className="text-muted-foreground">Enter your credentials to access your account</p>
+            </div>
+
+            {/* Form Card */}
+            <Card className="border-border">
+              <CardContent className="pt-6">
+                <form onSubmit={handleLogin} className="space-y-6">
+                  {/* Username Input */}
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-semibold text-foreground">
+                      Username
+                    </Label>
                     <Input
                       id="username"
                       type="text"
-                      placeholder="johndoe"
+                      placeholder="Enter your username"
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="password">Password</Label>
+
+                  {/* Password Input */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password" className="text-sm font-semibold text-foreground">
+                        Password
+                      </Label>
                       <Link
                         href="/auth/forgot-password"
-                        className="text-sm underline underline-offset-4"
+                        className="text-xs text-primary hover:underline"
                       >
                         Forgot password?
                       </Link>
@@ -79,28 +107,65 @@ export default function Page() {
                     <Input
                       id="password"
                       type="password"
+                      placeholder="Enter your password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
                     />
                   </div>
-                  {error && <p className="text-sm text-red-500">{error}</p>}
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Logging in...' : 'Login'}
-                  </Button>
-                </div>
-                <div className="mt-4 text-center text-sm">
-                  Are you an instructor?{' '}
-                  <Link
-                    href="/auth/admin-register"
-                    className="underline underline-offset-4"
+
+                  {/* Error Message */}
+                  {error && (
+                    <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3">
+                      <p className="text-sm text-destructive">{error}</p>
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-10 bg-primary hover:bg-primary text-primary-foreground font-semibold rounded-lg transition-all"
                   >
-                    Register here
-                  </Link>
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Signing in...
+                      </span>
+                    ) : (
+                      'Sign In'
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Footer Links */}
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border"></div>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">New here?</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <Link href="/auth/sign-up" className="block">
+                  <Button variant="outline" className="w-full h-10 border-border hover:border-primary hover:bg-background text-foreground">
+                    Create Student Account
+                  </Button>
+                </Link>
+                <Link href="/auth/admin-register" className="block">
+                  <Button variant="outline" className="w-full h-10 border-secondary hover:border-primary hover:bg-secondary/5 text-foreground">
+                    Register as Instructor
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
