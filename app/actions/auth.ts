@@ -1,4 +1,3 @@
-// app/actions/auth.ts
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
@@ -26,13 +25,24 @@ export async function loginAction(email: string, password: string) {
     
     // Redirect based on role
     if (profile?.is_admin) {
-      redirect('/admin/dashboard')
+      redirect('/dashboard/admin')
     } else {
       redirect('/dashboard')
     }
   } catch (error) {
     console.error('Login error:', error)
     return { error: 'Invalid email or password' }
+  }
+}
+
+export async function logoutAction() {
+  try {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/')
+  } catch (error) {
+    console.error('Logout error:', error)
+    redirect('/')
   }
 }
 
@@ -59,16 +69,5 @@ export async function signUpAction(email: string, password: string, fullName: st
   } catch (error) {
     console.error('Signup error:', error)
     return { error: 'An unexpected error occurred' }
-  }
-}
-
-export async function signOutAction() {
-  try {
-    const supabase = await createClient()
-    await supabase.auth.signOut()
-    redirect('/')
-  } catch (error) {
-    console.error('Sign out error:', error)
-    return { error: 'An error occurred during sign out' }
   }
 }
