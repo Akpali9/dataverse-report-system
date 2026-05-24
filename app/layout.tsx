@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: 'Dataverse Report System',
   description: 'Dataverse Report System',
   icons: {
-    icon: '/favicon.ico', 
+    icon: '/icon.svg', 
   },
 }
 
