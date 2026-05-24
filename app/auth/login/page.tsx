@@ -1,164 +1,115 @@
-// app/auth/login/page.tsx
-'use client'
+// app/actions/auth.ts
+'use server'
 
-import { loginAction } from '@/app/actions/auth'  // Change this line
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const result = await loginAction(email, password)  // Use loginAction
-      if (result?.error) {
-        setError(result.error)
-      } else {
-        router.push('/dashboard')
-      }
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
-    } finally {
-      setIsLoading(false)
+// Make sure this matches your login page (accepts email and password directly)
+export async function loginAction(email: string, password: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    
+    if (error) {
+      console.error('Login error:', error)
+      return { error: error.message }
     }
+    
+    // Get user role
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', data.user.id)
+      .single()
+    
+    // Redirect based on role
+    if (profile?.is_admin) {
+      redirect('/dashboard/admin')
+    } else {
+      redirect('/dashboard')
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    // Handle the redirect case
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      throw error
+    }
+    return { error: error instanceof Error ? error.message : 'An unexpected error occurred' }
   }
+}
 
-  return (
-    <div className="flex min-h-screen w-full bg-background">
-      {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary to-blue-700 flex-col justify-between p-12">
-        <div>
-          <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-            📚
-          </div>
-        </div>
-        <div className="space-y-6">
-          <h1 className="text-4xl font-bold text-white max-w-lg">
-            Welcome back to your learning platform
-          </h1>
-          <p className="text-lg text-blue-100">
-            Access your courses, assignments, and track your progress.
-          </p>
-        </div>
-        <p className="text-sm text-blue-100">© 2024 Learning Platform. All rights reserved.</p>
-      </div>
+// Student sign up
+export async function studentSignUpAction(email: string, password: string, fullName: string, username: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          username: username,
+          is_admin: false,
+        },
+      },
+    })
+    
+    if (error) {
+      console.error('Signup error:', error)
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Student signup error:', error)
+    return { error: error instanceof Error ? error.message : 'An unexpected error occurred' }
+  }
+}
 
-      {/* Right side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-sm">
-          <div className="space-y-8">
-            {/* Header */}
-            <div className="space-y-2 text-center lg:text-left">
-              <h2 className="text-3xl font-bold text-foreground">Sign In</h2>
-              <p className="text-muted-foreground">Enter your credentials to access your account</p>
-            </div>
+// Admin sign up
+export async function adminSignUpAction(email: string, password: string, fullName: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          username: email.split('@')[0],
+          is_admin: true,
+        },
+      },
+    })
+    
+    if (error) {
+      console.error('Admin signup error:', error)
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Admin signup error:', error)
+    return { error: error instanceof Error ? error.message : 'An unexpected error occurred' }
+  }
+}
 
-            {/* Form Card */}
-            <Card className="border-border">
-              <CardContent className="pt-6">
-                <form onSubmit={handleLogin} className="space-y-6">
-                  {/* Email Input */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-semibold text-foreground">
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
-                    />
-                  </div>
-
-                  {/* Password Input */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password" className="text-sm font-semibold text-foreground">
-                        Password
-                      </Label>
-                      <Link
-                        href="/auth/forgot-password"
-                        className="text-xs text-primary hover:underline"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="h-10 rounded-lg border-border bg-muted focus:border-primary"
-                    />
-                  </div>
-
-                  {/* Error Message */}
-                  {error && (
-                    <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3">
-                      <p className="text-sm text-destructive">{error}</p>
-                    </div>
-                  )}
-
-                  {/* Submit Button */}
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full h-10 bg-primary hover:bg-primary text-primary-foreground font-semibold rounded-lg transition-all"
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center gap-2">
-                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Signing in...
-                      </span>
-                    ) : (
-                      'Sign In'
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Footer Links */}
-            <div className="space-y-4">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">New here?</span>
-                </div>
-              </div>
-
-              <Link href="/auth/sign-up" className="block">
-                <Button variant="outline" className="w-full h-10 border-border hover:border-primary hover:bg-background text-foreground">
-                  Create Student Account
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+// Logout action
+export async function logoutAction() {
+  try {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/')
+  } catch (error) {
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      throw error
+    }
+    redirect('/')
+  }
 }
