@@ -1,15 +1,8 @@
-// app/actions/auth.ts
-'use server'
-
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-
 export async function studentSignUpAction(email: string, password: string, fullName: string, username: string) {
   try {
     const supabase = await createClient()
     
-    console.log('Attempting to sign up:', { email, fullName, username })
-    
+    // Create the auth user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -27,10 +20,24 @@ export async function studentSignUpAction(email: string, password: string, fullN
       return { error: error.message }
     }
     
-    console.log('Signup successful:', data)
-    
-    // Wait a moment for the trigger to create the profile
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    if (data.user) {
+      // Manually create the profile if trigger didn't work
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert({
+          id: data.user.id,
+          username: username,
+          full_name: fullName,
+          is_admin: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+      
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+        // Don't return error here, as user was created
+      }
+    }
     
     return { success: true }
   } catch (error) {
