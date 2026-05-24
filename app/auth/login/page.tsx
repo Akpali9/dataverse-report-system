@@ -54,7 +54,7 @@ export default function LoginPage() {
             Access your courses, assignments, and track your progress.
           </p>
         </div>
-        <p className="text-sm text-blue-100">© 2024 Learning Platform. All rights reserved.</p>
+        <p className="text-sm text-blue-100">© Learning Platform. All rights reserved.</p>
       </div>
 
       {/* Right side - Login Form */}
