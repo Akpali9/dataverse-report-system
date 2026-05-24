@@ -1,17 +1,28 @@
+
 import { redirect } from 'next/navigation'
-import { getCurrentUserProfile } from '@/lib/api-utils'
-import StudentProfileClient from '@/components/student/profile-client'
+import { createClient } from '@/lib/supabase/server'
+import StudentProfileClient from './StudentProfileClient'
 
 export default async function StudentProfilePage() {
-  const profile = await getCurrentUserProfile()
-
-  if (!profile || profile.is_admin) {
+  const supabase = await createClient()
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
     redirect('/auth/login')
   }
-
-  return (
-    <div className="min-h-screen bg-background">
-      <StudentProfileClient profile={profile} />
-    </div>
-  )
+  
+  // Get user profile
+  const { data: profile } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+  
+  if (!profile) {
+    redirect('/dashboard')
+  }
+  
+  return <StudentProfileClient profile={profile} />
 }
