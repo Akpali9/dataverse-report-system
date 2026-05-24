@@ -9,17 +9,18 @@ export default async function DashboardPage() {
     redirect('/auth/login')
   }
   
-  // Check user role
+  // Check if user is admin
   const { data: profile } = await supabase
     .from('users')
     .select('is_admin')
     .eq('id', user.id)
     .single()
   
-  // Redirect to appropriate dashboard
-  if (profile?.is_admin) {
+  // Force redirect to admin dashboard if admin
+  if (profile?.is_admin === true) {
     redirect('/dashboard/admin')
-  } else {
-    redirect('/dashboard/student')
   }
+  
+  // Otherwise go to student dashboard
+  redirect('/dashboard/student')
 }
