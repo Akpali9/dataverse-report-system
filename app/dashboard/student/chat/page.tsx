@@ -9,6 +9,7 @@ export default async function StudentChatPage() {
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser()
   
+  // If not logged in, redirect to login
   if (!user) {
     redirect('/auth/login')
   }
@@ -20,7 +21,7 @@ export default async function StudentChatPage() {
     .eq('id', user.id)
     .single()
   
-  // Redirect admin to admin chat
+  // If admin, redirect to admin chat
   if (profile?.is_admin) {
     redirect('/dashboard/admin/chat')
   }
