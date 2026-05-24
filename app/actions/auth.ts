@@ -1,4 +1,9 @@
-// app/actions/auth.ts - Updated loginAction
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+// Login action
 export async function loginAction(email: string, password: string) {
   try {
     const supabase = await createClient()
@@ -9,57 +14,98 @@ export async function loginAction(email: string, password: string) {
     })
     
     if (error) {
-      console.error('Login error:', error)
       return { error: error.message }
     }
     
-    // Try to get profile
-    let { data: profile, error: profileError } = await supabase
+    // Get user role
+    const { data: profile } = await supabase
       .from('users')
-      .select('*')
+      .select('is_admin')
       .eq('id', data.user.id)
       .single()
     
-    // If profile doesn't exist, create it
-    if (profileError && profileError.code === 'PGRST116') {
-      console.log('Profile not found, creating...')
-      
-      const { data: newProfile, error: insertError } = await supabase
-        .from('users')
-        .insert({
-          id: data.user.id,
-          username: data.user.email?.split('@')[0] || 'user',
-          full_name: data.user.user_metadata?.full_name || '',
-          email: data.user.email,
-          is_admin: data.user.user_metadata?.is_admin || false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single()
-      
-      if (insertError) {
-        console.error('Profile creation error:', insertError)
-        return { error: 'Failed to create user profile' }
-      }
-      
-      profile = newProfile
-    } else if (profileError) {
-      console.error('Profile fetch error:', profileError)
-      return { error: 'Error fetching user profile' }
-    }
-    
-    // Redirect based on role
-    if (profile?.is_admin === true) {
+    if (profile?.is_admin) {
       redirect('/dashboard/admin')
     } else {
       redirect('/dashboard')
     }
   } catch (error) {
-    console.error('Login error:', error)
     if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
       throw error
     }
-    return { error: error instanceof Error ? error.message : 'An unexpected error occurred' }
+    return { error: error instanceof Error ? error.message : 'An error occurred' }
   }
+}
+
+// Student sign up
+export async function studentSignUpAction(email: string, password: string, fullName: string, username: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          username: username,
+          is_admin: false,
+        },
+      },
+    })
+    
+    if (error) {
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'An error occurred' }
+  }
+}
+
+// Admin sign up
+export async function adminSignUpAction(email: string, password: string, fullName: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          username: email.split('@')[0],
+          is_admin: true,
+        },
+      },
+    })
+    
+    if (error) {
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'An error occurred' }
+  }
+}
+
+// Logout action
+export async function logoutAction() {
+  try {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/')
+  } catch (error) {
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      throw error
+    }
+    redirect('/')
+  }
+}
+
+// Generic sign up
+export async function signUpAction(email: string, password: string, fullName: string, username: string) {
+  return studentSignUpAction(email, password, fullName, username)
 }
