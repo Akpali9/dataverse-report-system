@@ -1,7 +1,7 @@
-// app/dashboard/student/chat/page.tsx
+
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import StudentChatClient from './StudentChatClient'
+import ChatClient from '@/components/chat/ChatClient'
 
 export default async function StudentChatPage() {
   const supabase = await createClient()
@@ -13,36 +13,29 @@ export default async function StudentChatPage() {
     redirect('/auth/login')
   }
   
-  // Check if user is student (not admin)
+  // Get user profile
   const { data: profile } = await supabase
     .from('users')
-    .select('is_admin')
+    .select('*')
     .eq('id', user.id)
     .single()
   
-  // If admin, redirect to admin chat
+  // Redirect admin to admin chat
   if (profile?.is_admin) {
     redirect('/dashboard/admin/chat')
   }
   
-  // Get all admins for student to chat with
-  const { data: admins } = await supabase
+  // Get teachers/admins for student to chat with
+  const { data: contacts } = await supabase
     .from('users')
-    .select('id, username, full_name, email')
+    .select('id, username, full_name, email, is_admin')
     .eq('is_admin', true)
-  
-  // Get previous conversations
-  const { data: conversations } = await supabase
-    .from('chat_messages')
-    .select('*')
-    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-    .order('created_at', { ascending: false })
+    .order('full_name', { ascending: true })
   
   return (
-    <StudentChatClient 
-      currentUserId={user.id}
-      admins={admins || []}
-      initialConversations={conversations || []}
+    <ChatClient 
+      currentUser={profile}
+      contacts={contacts || []}
     />
   )
 }
