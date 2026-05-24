@@ -1,11 +1,13 @@
-// app/dashboard/admin/AdminDashboardClient.tsx
+
 'use client'
 
 import { logoutAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { getUnreadCount } from '@/lib/chat-utils'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { MessageCircle } from 'lucide-react'
 
 export default function AdminDashboardClient({
   profile,
@@ -17,6 +19,23 @@ export default function AdminDashboardClient({
   announcements: any[]
 }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread message count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (profile?.id) {
+        const count = await getUnreadCount(profile.id)
+        setUnreadCount(count)
+      }
+    }
+    
+    fetchUnreadCount()
+    
+    // Poll for new messages every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [profile?.id])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -33,6 +52,17 @@ export default function AdminDashboardClient({
             <p className="text-sm text-gray-500">Welcome, {profile?.full_name}</p>
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/dashboard/admin/chat">
+              <Button variant="outline" className="relative">
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Messages
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Button
               variant="destructive"
               onClick={handleLogout}
@@ -73,9 +103,14 @@ export default function AdminDashboardClient({
                 Performance
               </Button>
             </Link>
-            <Link href="/dashboard/admin/messages">
-              <Button variant="outline" size="sm">
+            <Link href="/dashboard/admin/chat">
+              <Button variant="outline" size="sm" className="relative">
                 Messages
+                {unreadCount > 0 && (
+                  <span className="ml-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                    {unreadCount}
+                  </span>
+                )}
               </Button>
             </Link>
           </div>
@@ -100,6 +135,30 @@ export default function AdminDashboardClient({
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">{announcements.length}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{unreadCount}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Link href="/dashboard/admin/chat">
+                  <Button size="sm" variant="outline" className="w-full">
+                    Go to Messages
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -148,6 +207,13 @@ export default function AdminDashboardClient({
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            {students.length > 10 && (
+              <div className="mt-4 text-center">
+                <Link href="/dashboard/admin/students">
+                  <Button variant="outline">View All Students</Button>
+                </Link>
               </div>
             )}
           </CardContent>
