@@ -1,24 +1,49 @@
+
 import { redirect } from 'next/navigation'
-import { getCurrentUserProfile, getStudentAssignments, getAnnouncements } from '@/lib/api-utils'
+import { createClient } from '@/lib/supabase/server'
 import StudentDashboardClient from '@/components/student/dashboard-client'
 
-export default async function StudentDashboard() {
-  const profile = await getCurrentUserProfile()
-
-  if (!profile || profile.is_admin) {
+export default async function StudentDashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
     redirect('/auth/login')
   }
-
-  const assignments = await getStudentAssignments()
-  const announcements = await getAnnouncements(10)
-
+  
+  const { data: profile } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+  
+  // Redirect if admin (shouldn't be here)
+  if (profile?.is_admin) {
+    redirect('/dashboard/admin')
+  }
+  
+  const { data: assignments } = await supabase
+    .from('assignments')
+    .select('*')
+    .order('due_date', { ascending: true })
+  
+  const { data: exams } = await supabase
+    .from('exams')
+    .select('*')
+    .order('created_at', { ascending: false })
+  
+  const { data: announcements } = await supabase
+    .from('announcements')
+    .select('*, users(full_name)')
+    .order('created_at', { ascending: false })
+    .limit(5)
+  
   return (
-    <div className="min-h-screen bg-background">
-      <StudentDashboardClient
-        profile={profile}
-        assignments={assignments}
-        announcements={announcements}
-      />
-    </div>
+    <StudentDashboardClient
+      profile={profile}
+      assignments={assignments || []}
+      exams={exams || []}
+      announcements={announcements || []}
+    />
   )
 }
