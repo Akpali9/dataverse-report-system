@@ -1,8 +1,43 @@
+// app/actions/auth.ts
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+// Admin sign up action
+export async function adminSignUpAction(email: string, password: string, fullName: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          username: email.split('@')[0],
+          is_admin: true,
+        },
+      },
+    })
+    
+    if (error) {
+      console.error('Admin signup error:', error)
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Admin signup error:', error)
+    return { error: error instanceof Error ? error.message : 'An unexpected error occurred' }
+  }
+}
+
+// Student sign up action
 export async function studentSignUpAction(email: string, password: string, fullName: string, username: string) {
   try {
     const supabase = await createClient()
     
-    // Create the auth user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -16,27 +51,8 @@ export async function studentSignUpAction(email: string, password: string, fullN
     })
     
     if (error) {
-      console.error('Signup error:', error)
+      console.error('Student signup error:', error)
       return { error: error.message }
-    }
-    
-    if (data.user) {
-      // Manually create the profile if trigger didn't work
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: data.user.id,
-          username: username,
-          full_name: fullName,
-          is_admin: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-      
-      if (profileError) {
-        console.error('Profile creation error:', profileError)
-        // Don't return error here, as user was created
-      }
     }
     
     return { success: true }
@@ -44,4 +60,55 @@ export async function studentSignUpAction(email: string, password: string, fullN
     console.error('Student signup error:', error)
     return { error: error instanceof Error ? error.message : 'An unexpected error occurred' }
   }
+}
+
+// Login action
+export async function loginAction(email: string, password: string) {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    
+    if (error) {
+      console.error('Login error:', error)
+      return { error: error.message }
+    }
+    
+    // Check if user is admin
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', data.user.id)
+      .single()
+    
+    // Redirect based on role
+    if (profile?.is_admin) {
+      redirect('/dashboard/admin')
+    } else {
+      redirect('/dashboard')
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    return { error: error instanceof Error ? error.message : 'An unexpected error occurred' }
+  }
+}
+
+// Logout action
+export async function logoutAction() {
+  try {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    redirect('/')
+  } catch (error) {
+    console.error('Logout error:', error)
+    redirect('/')
+  }
+}
+
+// Generic sign up action (for backwards compatibility)
+export async function signUpAction(email: string, password: string, fullName: string, username: string) {
+  return studentSignUpAction(email, password, fullName, username)
 }
