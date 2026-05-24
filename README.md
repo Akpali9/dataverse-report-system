@@ -28,7 +28,3 @@ pnpm, React Hook Form, Recharts
 # Live Demo:
 🔗 report-system-liard.vercel.app
 
-Or even shorter (one line):
-
-Full-stack learning management platform with role-based dashboards, assignments, exams, real-time chat, and performance tracking – built with Next.js 16 + Supabase.
-
