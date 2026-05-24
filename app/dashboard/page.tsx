@@ -1,15 +1,23 @@
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getCurrentUserProfile } from '@/lib/api-utils'
 
-export default async function Page() {
-  const profile = await getCurrentUserProfile()
-
-  if (!profile) {
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
     redirect('/auth/login')
   }
-
-  // Route to appropriate dashboard based on role
-  if (profile.is_admin) {
+  
+  // Check user role
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single()
+  
+  // Redirect to appropriate dashboard
+  if (profile?.is_admin) {
     redirect('/dashboard/admin')
   } else {
     redirect('/dashboard/student')
