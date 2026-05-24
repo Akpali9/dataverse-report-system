@@ -1,25 +1,48 @@
+// app/dashboard/student/chat/page.tsx
 import { redirect } from 'next/navigation'
-import { getCurrentUserProfile } from '@/lib/api-utils'
+import { createClient } from '@/lib/supabase/server'
+import StudentChatClient from './StudentChatClient'
 
 export default async function StudentChatPage() {
-  const profile = await getCurrentUserProfile()
-
-  if (!profile || profile.is_admin) {
+  const supabase = await createClient()
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
     redirect('/auth/login')
   }
-
+  
+  // Check if user is student (not admin)
+  const { data: profile } = await supabase
+    .from('users')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single()
+  
+  // If admin, redirect to admin chat
+  if (profile?.is_admin) {
+    redirect('/dashboard/admin/chat')
+  }
+  
+  // Get all admins for student to chat with
+  const { data: admins } = await supabase
+    .from('users')
+    .select('id, username, full_name, email')
+    .eq('is_admin', true)
+  
+  // Get previous conversations
+  const { data: conversations } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+    .order('created_at', { ascending: false })
+  
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Chat with Admin</h1>
-        </div>
-      </header>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center py-12">
-          <p className="text-gray-500">Real-time chat with instructors coming soon...</p>
-        </div>
-      </main>
-    </div>
+    <StudentChatClient 
+      currentUserId={user.id}
+      admins={admins || []}
+      initialConversations={conversations || []}
+    />
   )
 }
