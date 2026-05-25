@@ -1,7 +1,8 @@
+// components/chat/ChatClient.tsx
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { getMessages, sendMessage, markMessagesAsRead, subscribeToMessages, getUnreadCount } from '@/lib/chat-utils'
+import { getMessages, sendMessage, markMessagesAsRead } from '@/lib/chat-utils'
 import { useEffect, useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,7 +43,7 @@ export default function ChatClient({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
-  // Add loading state if currentUser is null
+  // If no currentUser, show loading
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
@@ -141,14 +142,14 @@ export default function ChatClient({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              {currentUser?.is_admin ? 'Students' : 'Teachers & Admins'}
+              {currentUser.is_admin ? 'Students' : 'Teachers & Admins'}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto p-0">
             <ScrollArea className="h-full">
               {contacts.length === 0 ? (
                 <p className="text-center text-gray-500 py-8">
-                  No {currentUser?.is_admin ? 'students' : 'teachers'} available
+                  No {currentUser.is_admin ? 'students' : 'teachers'} available
                 </p>
               ) : (
                 <div className="space-y-1 p-2">
@@ -221,18 +222,18 @@ export default function ChatClient({
                       messages.map((msg) => (
                         <div
                           key={msg.id}
-                          className={`flex ${msg.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}
+                          className={`flex ${msg.sender_id === currentUser.id ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
                             className={`max-w-[70%] p-3 rounded-lg ${
-                              msg.sender_id === currentUser?.id
+                              msg.sender_id === currentUser.id
                                 ? 'bg-blue-500 text-white'
                                 : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
                             }`}
                           >
                             <p className="text-sm break-words">{msg.message}</p>
                             <p className={`text-xs mt-1 ${
-                              msg.sender_id === currentUser?.id 
+                              msg.sender_id === currentUser.id 
                                 ? 'text-blue-100' 
                                 : 'text-gray-500'
                             }`}>
@@ -266,7 +267,7 @@ export default function ChatClient({
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
               <MessageCircle className="h-12 w-12 mb-2 opacity-50" />
-              <p>Select a {currentUser?.is_admin ? 'student' : 'teacher'} to start chatting</p>
+              <p>Select a {currentUser.is_admin ? 'student' : 'teacher'} to start chatting</p>
             </div>
           )}
         </Card>
