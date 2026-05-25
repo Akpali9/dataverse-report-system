@@ -1,4 +1,3 @@
-// app/dashboard/admin/exams/create/CreateExamForm.tsx
 'use client'
 
 import { useState } from 'react'
