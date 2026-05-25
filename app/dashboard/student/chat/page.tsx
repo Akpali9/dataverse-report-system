@@ -1,4 +1,3 @@
-
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ChatClient from '@/components/chat/ChatClient'
@@ -9,7 +8,6 @@ export default async function StudentChatPage() {
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser()
   
-  // If not logged in, redirect to login
   if (!user) {
     redirect('/auth/login')
   }
@@ -21,8 +19,12 @@ export default async function StudentChatPage() {
     .eq('id', user.id)
     .single()
   
+  if (!profile) {
+    redirect('/auth/login')
+  }
+  
   // If admin, redirect to admin chat
-  if (profile?.is_admin) {
+  if (profile.is_admin) {
     redirect('/dashboard/admin/chat')
   }
   
