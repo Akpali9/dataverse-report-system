@@ -1,8 +1,7 @@
-
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { getMessages, sendMessage, markMessagesAsRead, subscribeToMessages } from '@/lib/chat-utils'
+import { getMessages, sendMessage, markMessagesAsRead, subscribeToMessages, getUnreadCount } from '@/lib/chat-utils'
 import { useEffect, useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,7 +31,7 @@ export default function ChatClient({
   currentUser, 
   contacts 
 }: { 
-  currentUser: User
+  currentUser: User | null
   contacts: User[]
 }) {
   const [selectedContact, setSelectedContact] = useState<User | null>(null)
@@ -43,13 +42,25 @@ export default function ChatClient({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
+  // Add loading state if currentUser is null
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-2 text-gray-500">Loading chat...</p>
+        </div>
+      </div>
+    )
+  }
+
   // Load messages when contact is selected
   useEffect(() => {
-    if (selectedContact) {
+    if (selectedContact && currentUser?.id) {
       loadMessages()
       markMessagesAsRead(currentUser.id, selectedContact.id)
     }
-  }, [selectedContact])
+  }, [selectedContact, currentUser?.id])
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -58,6 +69,8 @@ export default function ChatClient({
 
   // Subscribe to new messages
   useEffect(() => {
+    if (!currentUser?.id) return
+
     const subscription = supabase
       .channel('chat-messages')
       .on(
@@ -70,15 +83,15 @@ export default function ChatClient({
         },
         (payload) => {
           const newMsg = payload.new as Message
-          // Update unread count for the sender
           setUnreadCounts(prev => ({
             ...prev,
             [newMsg.sender_id]: (prev[newMsg.sender_id] || 0) + 1
           }))
-          // Add to messages if this conversation is open
           if (selectedContact?.id === newMsg.sender_id) {
             setMessages(prev => [...prev, newMsg])
-            markMessagesAsRead(currentUser.id, newMsg.sender_id)
+            if (currentUser?.id) {
+              markMessagesAsRead(currentUser.id, newMsg.sender_id)
+            }
           }
         }
       )
@@ -87,16 +100,16 @@ export default function ChatClient({
     return () => {
       subscription.unsubscribe()
     }
-  }, [currentUser.id, selectedContact])
+  }, [currentUser?.id, selectedContact?.id])
 
   const loadMessages = async () => {
-    if (!selectedContact) return
+    if (!selectedContact || !currentUser?.id) return
     const msgs = await getMessages(currentUser.id, selectedContact.id)
     setMessages(msgs)
   }
 
   const handleSendMessage = async () => {
-    if (!selectedContact || !newMessage.trim()) return
+    if (!selectedContact || !newMessage.trim() || !currentUser?.id) return
     
     setLoading(true)
     try {
@@ -128,14 +141,14 @@ export default function ChatClient({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              {currentUser.is_admin ? 'Students' : 'Teachers & Admins'}
+              {currentUser?.is_admin ? 'Students' : 'Teachers & Admins'}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto p-0">
             <ScrollArea className="h-full">
               {contacts.length === 0 ? (
                 <p className="text-center text-gray-500 py-8">
-                  No {currentUser.is_admin ? 'students' : 'teachers'} available
+                  No {currentUser?.is_admin ? 'students' : 'teachers'} available
                 </p>
               ) : (
                 <div className="space-y-1 p-2">
@@ -208,18 +221,18 @@ export default function ChatClient({
                       messages.map((msg) => (
                         <div
                           key={msg.id}
-                          className={`flex ${msg.sender_id === currentUser.id ? 'justify-end' : 'justify-start'}`}
+                          className={`flex ${msg.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
                             className={`max-w-[70%] p-3 rounded-lg ${
-                              msg.sender_id === currentUser.id
+                              msg.sender_id === currentUser?.id
                                 ? 'bg-blue-500 text-white'
                                 : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
                             }`}
                           >
                             <p className="text-sm break-words">{msg.message}</p>
                             <p className={`text-xs mt-1 ${
-                              msg.sender_id === currentUser.id 
+                              msg.sender_id === currentUser?.id 
                                 ? 'text-blue-100' 
                                 : 'text-gray-500'
                             }`}>
@@ -253,7 +266,7 @@ export default function ChatClient({
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
               <MessageCircle className="h-12 w-12 mb-2 opacity-50" />
-              <p>Select a {currentUser.is_admin ? 'student' : 'teacher'} to start chatting</p>
+              <p>Select a {currentUser?.is_admin ? 'student' : 'teacher'} to start chatting</p>
             </div>
           )}
         </Card>
