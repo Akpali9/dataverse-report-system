@@ -1,7 +1,6 @@
 # dataverse-report-system
 Dataverse Report System is a full-stack learning management platform that connects students and teachers in one centralized hub.
 
-
 # Key Features:
 Role-based dashboards for Students and Admins
 
